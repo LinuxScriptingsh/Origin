@@ -1,9 +1,8 @@
 # Origin
-Origininstaller
 
 Hey folks, LinuxScripting here
 
-I will present you the Origin Installier (right now it's a terminal Script)
+I will present you the Origin Installer (right now it's a terminal Script)
 
 Do what you want, download it, change it whatsoever.
 
