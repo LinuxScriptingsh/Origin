@@ -5,13 +5,13 @@ echo Inspired by LinuxGuides. https://www.youtube.com/LinuxGuides
 echo Please check the code of the script before executing this Script.
 echo You can abort this script every time by pressing  Ctrl + C
 echo "###################################################"
-echo This Script will now delete ~/Origin32/ "("If existing")"
+echo This Script will now delete ~/.Origin32/ "("If existing")"
 echo [Enter]
 echo "###################################################"
 
 read
 
-rm -r ~/Origin32/
+rm -r ~/.Origin32/
 
 
 echo "###################################################"
@@ -26,29 +26,48 @@ fi
 sudo dpkg --add-architecture i386
 wget https://dl.winehq.org/wine-builds/Release.key
 sudo apt-key add Release.key
+
 #!/bin/bash
-echo "Which OS are you using? (Hint: Wine for Ubuntu 'Bionic' 18.04 isn't available yet)"
+echo "Which OS are you using?"
 options=("Linux Mint 18.x" "Linux Mint 17.x" "Ubuntu")
 select opt in "${options[@]}"
-	do
+do
 	case $opt in
 		"Linux Mint 18.x")
-		sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main'
+		if sudo grep -q "deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main" /etc/apt/sources.list.d/additional-repositories.list
+		then
+			echo "Repository already added, skipping..."
+		else
+			sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main'
+			echo "Added repository"
+		fi
 		break
 		;;
 		"Linux Mint 17.x")
-		sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ trusty main'
-            	break
-            	;;
-		"Ubuntu")
-		sudo apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/
+		if sudo grep -q "deb https://dl.winehq.org/wine-builds/ubuntu/ trusty main" /etc/apt/sources.list.d/additional-repositories.list
+		then
+			echo "Repository already added, skipping..."
+		else
+			sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ trusty main'
+			echo "Added repository"
+		fi
 		break
 		;;
-        	*) 
+		"Ubuntu")
+		if sudo grep -q "https://dl.winehq.org/wine-builds/ubuntu/" /etc/apt/sources.list.d/additional-repositories.list
+		then
+			echo "Repository already added, skipping..."
+		else
+			sudo apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/
+			echo "Added repository"
+		fi
+		break
+		;;
+		*)
 		echo invalid option
 		;;
-		esac
-	done
+	esac
+done
 sudo apt-get update
 
 sudo apt-get install --install-recommends winehq-staging --yes
@@ -68,8 +87,8 @@ rm winetricks
 rm Release.key
 
 echo "###################################################"
-echo Installer has just finished. 
-echo Start game with following Command: 
+echo Installer has just finished.
+echo Start game with following Command:
 echo WINEPREFIX=~/.Origin32 wine "C:/Program Files (x86)/Origin/Origin.exe"
 echo Good Luck and Have Fun!
 echo "###################################################"
