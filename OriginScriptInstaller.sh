@@ -1,9 +1,9 @@
 #!/bin/bash
 echo "###################################################"
-echo Made by LinuxScripting.sh. This script comes WITHOUT warranty.
+echo Made by LinuxSquare. This script comes WITHOUT warranty.
 echo Inspired by LinuxGuides. https://www.youtube.com/LinuxGuides
-echo Please check the code of the script before executing this Script.
-echo You can abort this script every time by pressing  Ctrl + C
+echo Please check the code of the script before executing the Script.
+echo You can abort this script any time by pressing  Ctrl + C
 echo "###################################################"
 echo This Script will now delete ~/.EA32/ "("If existing")"
 echo [Enter]
@@ -11,7 +11,7 @@ echo "###################################################"
 
 read
 
-rm -r ~/.EA32/
+rm -rf ~/.EA32/
 
 
 echo "###################################################"
@@ -20,71 +20,30 @@ echo [y/n]
 echo "###################################################"
 read a
 if [[ $a == "Y" || $a == "y" ]]; then
-	sudo apt purge *wine* --yes
+	sudo pacman -Rns wine-staging --noconfirm
 fi
 
-sudo dpkg --add-architecture i386
-wget https://dl.winehq.org/wine-builds/Release.key
-sudo apt-key add Release.key
-
 #!/bin/bash
-echo "Which OS are you using?"
-options=("Linux Mint 18.x" "Linux Mint 17.x" "Ubuntu")
-select opt in "${options[@]}"
-do
-	case $opt in
-		"Linux Mint 18.x")
-		if sudo grep -q "deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main" /etc/apt/sources.list.d/additional-repositories.list
-		then
-			echo "Repository already added, skipping..."
-		else
-			sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main'
-			echo "Added repository"
-		fi
-		break
-		;;
-		"Linux Mint 17.x")
-		if sudo grep -q "deb https://dl.winehq.org/wine-builds/ubuntu/ trusty main" /etc/apt/sources.list.d/additional-repositories.list
-		then
-			echo "Repository already added, skipping..."
-		else
-			sudo apt-add-repository 'deb https://dl.winehq.org/wine-builds/ubuntu/ trusty main'
-			echo "Added repository"
-		fi
-		break
-		;;
-		"Ubuntu")
-		if sudo grep -q "https://dl.winehq.org/wine-builds/ubuntu/" /etc/apt/sources.list.d/additional-repositories.list
-		then
-			echo "Repository already added, skipping..."
-		else
-			sudo apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/
-			echo "Added repository"
-		fi
-		break
-		;;
-		*)
-		echo invalid option
-		;;
-	esac
-done
-sudo apt-get update
 
-sudo apt-get install --install-recommends winehq-staging --yes
+sudo pacman -Syu --noconfirm
+
+sudo pacman -S wine-staging lib32-libldap lib32-gnutls wget --noconfirm #wget just in case you haven't installed it yet.
 
 wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
 
 chmod +x winetricks
 
 WINEPREFIX=~/.EA32 WINEARCH=win32 wine
-WINEPREFIX=~/.EA32 ./winetricks vcrun2010 vcrun2013 vcrun2017 d3dx9
+WINEPREFIX=~/.EA32 ./winetricks vcrun2010
+WINEPREFIX=~/.EA32 ./winetricks vcrun2013
+WINEPREFIX=~/.EA32 ./winetricks vcrun2017
+WINEPREFIX=~/.EA32 ./winetricks d3dx9
 WINEPREFIX=~/.EA32 wine winecfg
 
 wget https://origin-a.akamaihd.net/Origin-Client-Download/origin/live/OriginThinSetup.exe
 WINEPREFIX=~/.EA32 wine OriginThinSetup.exe
-rm OriginThinSetup.exe
-rm winetricks
-rm Release.key
+rm -rf OriginThinSetup.exe
+rm -rf winetricks
 
 echo "###################################################"
 echo Installer has just finished.
