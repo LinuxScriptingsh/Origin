@@ -4,7 +4,7 @@ Step 1: Download the zip file or clone the repository using ``` git clone https:
 
 Step 2: Fire up a terminal inside (or navigate to) the folder, where the script is located.
 
-Step 3: Execute the Script by typing ``` ./OriginScriptInstaller ``` inside the terminal.
+Step 3: Execute the Script by typing ``` ./OriginScriptInstaller.sh ``` inside the terminal.
 
 Step 4: Follow and answer the instructions/questions, which are given by the script.
 
