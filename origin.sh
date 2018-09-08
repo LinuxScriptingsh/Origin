@@ -9,11 +9,11 @@ install() {
   echo [Origin Install] Removing EA32 Folder
   rm -rf ~/SquareGames/EA32/
   echo [Origin Install] Removing old versions of wine
-  pacman -Rns wine-staging --noconfirm
+  sudo pacman -Rns wine-staging --noconfirm
   echo [Origin Install] Updating your System
-  pacman -Syu --noconfirm
+  sudo pacman -Syu --noconfirm
   echo [Origin Install] Installing wine and additional libraries
-  pacman -S wine-staging lib32-libldap lib32-gnutls wget --noconfirm
+  sudo pacman -S wine-staging lib32-libldap lib32-gnutls wget --noconfirm
   echo [Origin Install] Downloading winetricks
   wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
   chmod +x winetricks
@@ -40,7 +40,7 @@ install() {
 
 update() {
   echo [Origin Install] Installing git
-  pacman -S git --noconfirm
+  sudo pacman -S git --noconfirm
   echo [Origin Install] Cloning wine-origin-updater from DrDoctor13
   git clone https://github.com/DrDoctor13/wine-origin-updater.git && cd wine-origin-updater
   echo [Origin Install] Executing Updatescript with used Wineprefix
@@ -49,16 +49,12 @@ update() {
   rm -rf wine-origin-updater
 }
 
-if [[ $EUID -ne 0 ]]; then
-  echo [Origin Install] Script only excecuteable with root.
+if [[ $1 = "-i" || $1 = "--install" ]]; then
+  install
+elif [[ $1 = "-u" || $1 = "--update" ]]; then
+  update
+elif [[ $1 = "--help" ]]; then
+  help
 else
-  if [[ $1 = "-i" || $1 = "--install" ]]; then
-    install
-  elif [[ $1 = "-u" || $1 = "--update" ]]; then
-    update
-  elif [[ $1 = "--help" ]]; then
-    help
-  else
-    echo Type $0 --help for more information
-  fi
+  echo Type $0 --help for more information
 fi
