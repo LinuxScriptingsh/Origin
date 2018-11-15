@@ -1,46 +1,212 @@
 #!/bin/bash
 
-FILE=origin
+# Maintainer: LinuxSquare
 
-help() {
-  echo -e "  -i, --install\t\t\t Installs the software"
-  echo -e "  -u, --update\t\t\t Updates the software"
+# Warning! this is not a PKGBUILD, this is just a script, which was inspired by a PKGBUILD of the Arch Linux Linux-Distribution!
+# This means, that you can't run this script by using "makepkg -si"
+. /etc/os-release
+OS=$ID
+pkgname=OriginSetup
+pkgver=4.0
+pkgdesc='Installs EA`s Origin on Arch Linux GNU/Linux'
+license='unknown'
+url="https://github.com/LinuxSquare/Origin"
+LOCATION=$HOME/SquareGames
+prefixname=EA32
+archdepends='lib32-libldap
+lib32-gnutls
+wget
+git'
+debdepends='libldap-2.4-2
+gnutls-bin
+apt-transport-https'
+fedoradepends='openldap
+gnutls'
+susedepend='gnutls
+openldap2'
+
+
+
+WHITE='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+ORANGE='\e[38;5;202m'
+
+function redecho() {
+  echo -e ${RED}${*}${WHITE}
 }
 
-install() {
+function errorQuit() {
+  redecho $1
+  exit 1
+}
+
+function greenecho() {
+  echo -e ${GREEN}${*}${WHITE}
+}
+
+function orangeecho() {
+  echo -e ${ORANGE}${*}${WHITE}
+}
+
+function help() {
+  echo -e "  -i, --install\t\t\t Installs the software"
+  echo -e "  -u, --update\t\t\t Updates the software"
+  echo -e "      --uninstall\t\t\t Uninstalls the software"
+}
+
+function uninstall() {
+  export WINEPREFIX=~/SquareGames/EA32
+  pushd "${WINEPREFIX}/drive_c/Program Files/Origin"
+  wineserver -f &
+  wineserver_pid=$!
+  orangeecho "Starting Origin Uninstaller"
+  wine start 'OriginUninstall.exe'
+  while kill -0 ${wineserver_pid} 2>/dev/null; do
+      sleep 1
+  done
+  popd
   rm -rf ~/SquareGames/EA32/
-  sudo pacman -Rns wine-staging --noconfirm
-  sudo pacman -Syu --noconfirm
-  sudo pacman -S wine-staging lib32-libldap lib32-gnutls wget --noconfirm
-  wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
+}
+
+function checkConnection() {
+  orangeecho "Checking your internet-connection"
+  wget --spider --quiet http://example.com
+  if [[ $? != 0 ]]; then
+    REASON="No internet-connection"
+    errorQuit "Uh oh, and error occured during installation, please fix the problem first, before you retry.
+    \nErrorCode: $REASON"
+  else
+    greenecho "Connection OK"
+  fi
+}
+
+function dependencies() {
+  if [[ -d $LOCATION/$prefixname ]]; then
+    errorQuit "It seems that you have already used this script.
+    \nPlease uninstall the software first before you try again."
+  fi
+  greenecho "Installing missing dependencies. This may take a while, depending on your internet-connection..."
+  if [[ $OS = "arch" ]]; then
+    sudo pacman -S $archdepends --quiet --noconfirm --noprogressbar
+  elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
+    sudo apt-get -qq install $debdepends -y
+  fi
+
+}
+
+function buildwine() {
+  greenecho "Installing Wine from the repository"
+  if [[ $OS = "arch" ]]; then
+    sudo pacman -Syu --quiet --noconfirm --noprogressbar
+    sudo pacman -S wine-staging --quiet --noconfirm --noprogressbar
+  elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
+    DEBVER=$VERSION_ID
+    sudo dpkg --add-architecture i386
+    wget -nc --quiet https://dl.winehq.org/wine-builds/Release.key
+    sudo apt-key add Release.key
+    if [[ $DEBVER = "9" ]]; then
+      echo "deb https://dl.winehq.org/wine-builds/debian/ stretch main" | sudo tee /etc/apt/sources.list.d/wine.list
+    elif [[ $DEBVER = "8" ]]; then
+      echo "deb https://dl.winehq.org/wine-builds/debian/ jessie main" | sudo tee /etc/apt/sources.list.d/wine.list
+    elif [[ $OS = "ubuntu" ]]; then
+      sudo apt-add-repository https://dl.winehq.org/wine-builds/ubuntu/
+    elif [[ $DEBVER = "19" ]]; then
+      sudo apt-add-repository "deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main"
+    elif [[ $DEBVER = "18.3" || $DEBVER = "18.2" || $DEBVER = "18.1" || $DEBVER = "18" ]]; then
+      sudo apt-add-repository "deb https://dl.winehq.org/wine-builds/ubuntu/ xenial main"
+    else
+      errorQuit "Unsupported distro version. This script currently supports only:
+      \nDebian 9 and 8
+      \nAny kind of Ubuntu version
+      \nLinux Mint 18.x and 19.0"
+    fi
+    sudo apt-get -qq update && sudo apt-get -qq upgrade
+    sudo apt-get -qq install --install-recommends winehq-staging
+  elif [[ $OS = "fedora" ]]; then
+    FEDORAVER=$VERSION_ID
+    sudo dnf -q install $fedoradepends
+    if [[ $FEDORAVER = "29" ]]; then
+      sudo dnf -q config-manager --add-repo https://download.opensuse.org/repositories/Emulators:/Wine:/Fedora/Fedora_29_standard/Emulators:Wine:Fedora.repo
+    elif [[ $FEDORAVER = "28" ]]; then
+      sudo dnf -q config-manager --add-repo https://dl.winehq.org/wine-builds/fedora/28/winehq.repo
+    else
+      errorQuit "Unsupported Fedora version. Please make sure you're using either version 28 or 29"
+    fi
+    sudo dnf -q install winehq-staging
+  elif [[ $OS = "opensuse-tumbleweed" ]]; then
+    sudo zypper in -y $susedepend
+    sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Tumbleweed/Emulators:Wine.repo | echo 'a'
+    sudo zypper in -y wine-staging
+  elif [[ $OS = "opensuse-leap" ]]; then
+    SUSEVER=$VERSION
+    sudo zypper -y in $susedepend
+    if [[ $SUSEVER = "15.0" ]]; then
+      sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Leap_15.0/Emulators:Wine.repo | echo 'a'
+    elif [[ $SUSEVER = "42.3" ]]; then
+      sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Leap_42.3/Emulators:Wine.repo | echo 'a'
+    else
+      errorQuit "Unsupported openSUSE version. Please make sure you're using either version 42.3, 15.0 or Tumbleweed"
+    fi
+    sudo zypper in -y wine-staging
+  fi
+}
+
+function preparePrefix() {
+  orangeecho "Cloning winetricks from githubusercontent"
+  wget --quiet --no-check-certificate https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
   chmod +x winetricks
-  mkdir ~/SquareGames
-  mkdir ~/SquareGames/EA32
-  WINEPREFIX=~/SquareGames/EA32 WINEARCH=win32 wine
+  mkdir -p ~/SquareGames
+  orangeecho "Downloading dlls to generate Wineprefix. Please select Windows 7 as your operating system inside winecfg.
+  \nBe sure you have removed the ticks for sending data and crash reports to Microsoft, while installing the DLL files.
+  \nPress [RETURN] when you've finished reading."
+  read
+  WINEPREFIX=~/SquareGames/EA32 wine
+  export WINEPREFIX=~/SquareGames/EA32
+  rm -rf "${WINEPREFIX}"
+  WINEARCH=win32 wineboot -u
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2010
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2013
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2017
   WINEPREFIX=~/SquareGames/EA32 ./winetricks d3dx9
   WINEPREFIX=~/SquareGames/EA32 wine winecfg
-  wget https://origin-a.akamaihd.net/Origin-Client-Download/origin/live/OriginThinSetup.exe
-  WINEPREFIX=~/SquareGames/EA32 wine OriginThinSetup.exe
-  rm -rf OriginThinSetup.exe
-  rm -rf winetricks
+  rm -f winetricks
 }
 
-update() {
-  sudo pacman -S git --noconfirm
+function installOrigin() {
+  export WINEPREFIX=~/SquareGames/EA32
+  pushd "${WINEPREFIX}/drive_c"
+  orangeecho "Getting Origin installation-file"
+  wget --quiet https://origin-a.akamaihd.net/Origin-Client-Download/origin/legacy/OriginThinSetup.exe
+  wineserver -f &
+  wineserver_pid=$!
+  orangeecho "Starting Origin Installer"
+  wine start 'C:\OriginThinSetup.exe'
+  while kill -0 ${wineserver_pid} 2>/dev/null; do
+      sleep 1
+  done
+  rm -f OriginThinSetup.exe
+  popd
+}
+
+function update() {
   git clone https://github.com/DrDoctor13/wine-origin-updater.git && cd wine-origin-updater
   WINEPREFIX=~/SquareGames/EA32 ./updateorigin.sh && cd ..
-  rm -rf wine-origin-updater
+  rm -f wine-origin-updater
 }
 
 if [[ $1 = "-i" || $1 = "--install" ]]; then
-  install
+  checkConnection
+  dependencies
+  buildwine
+  preparePrefix
+  installOrigin
 elif [[ $1 = "-u" || $1 = "--update" ]]; then
   update
+elif [[ $1 = "--uninstall" ]]; then
+  uninstall
 elif [[ $1 = "--help" ]]; then
   help
 else
-  echo Type ./$FILE.sh --help for more information
+  echo Type $0 --help for more information
 fi
