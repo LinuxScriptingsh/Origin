@@ -16,16 +16,14 @@ prefixname=EA32
 archdepends='lib32-libldap
 lib32-gnutls
 wget
-git'
-debdepends='libldap-2.4-2
-gnutls-bin
-apt-transport-https'
+git
+cabextract'
 fedoradepends='openldap
-gnutls'
+gnutls
+cabextract'
 susedepend='gnutls
-openldap2'
-
-
+openldap2
+cabextract'
 
 WHITE='\033[0m'
 RED='\033[0;31m'
@@ -90,7 +88,7 @@ function dependencies() {
   if [[ $OS = "arch" ]]; then
     sudo pacman -S "$archdepends" --quiet --noconfirm --noprogressbar
   elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
-    sudo apt-get -qq install "$debdepends" -y
+    sudo apt-get -qq install libldap-2.4-2 gnutls-bin apt-transport-https cabextract -y
   fi
 
 }
