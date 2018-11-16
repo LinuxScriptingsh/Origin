@@ -33,20 +33,20 @@ GREEN='\033[0;32m'
 ORANGE='\e[38;5;202m'
 
 function redecho() {
-  echo -e ${RED}${*}${WHITE}
+  echo -e "${RED}${*}${WHITE}"
 }
 
 function errorQuit() {
-  redecho $1
+  redecho "$1"
   exit 1
 }
 
 function greenecho() {
-  echo -e ${GREEN}${*}${WHITE}
+  echo -e "${GREEN}${*}${WHITE}"
 }
 
 function orangeecho() {
-  echo -e ${ORANGE}${*}${WHITE}
+  echo -e "${ORANGE}${*}${WHITE}"
 }
 
 function help() {
@@ -88,9 +88,9 @@ function dependencies() {
   fi
   greenecho "Installing missing dependencies. This may take a while, depending on your internet-connection..."
   if [[ $OS = "arch" ]]; then
-    sudo pacman -S $archdepends --quiet --noconfirm --noprogressbar
+    sudo pacman -S "$archdepends" --quiet --noconfirm --noprogressbar
   elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
-    sudo apt-get -qq install $debdepends -y
+    sudo apt-get -qq install "$debdepends" -y
   fi
 
 }
@@ -125,7 +125,7 @@ function buildwine() {
     sudo apt-get -qq install --install-recommends winehq-staging
   elif [[ $OS = "fedora" ]]; then
     FEDORAVER=$VERSION_ID
-    sudo dnf -q install $fedoradepends
+    sudo dnf -q install "$fedoradepends"
     if [[ $FEDORAVER = "29" ]]; then
       sudo dnf -q config-manager --add-repo https://download.opensuse.org/repositories/Emulators:/Wine:/Fedora/Fedora_29_standard/Emulators:Wine:Fedora.repo
     elif [[ $FEDORAVER = "28" ]]; then
@@ -135,12 +135,12 @@ function buildwine() {
     fi
     sudo dnf -q install winehq-staging
   elif [[ $OS = "opensuse-tumbleweed" ]]; then
-    sudo zypper in -y $susedepend
+    sudo zypper in -y "$susedepend"
     sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Tumbleweed/Emulators:Wine.repo | echo 'a'
     sudo zypper in -y wine-staging
   elif [[ $OS = "opensuse-leap" ]]; then
     SUSEVER=$VERSION
-    sudo zypper -y in $susedepend
+    sudo zypper -y in "$susedepend"
     if [[ $SUSEVER = "15.0" ]]; then
       sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Leap_15.0/Emulators:Wine.repo | echo 'a'
     elif [[ $SUSEVER = "42.3" ]]; then
@@ -180,7 +180,7 @@ function installOrigin() {
   wget --quiet https://origin-a.akamaihd.net/Origin-Client-Download/origin/legacy/OriginThinSetup.exe
   wineserver -f &
   wineserver_pid=$!
-  orangeecho "Starting Origin Installer"
+  orangeecho "Starting Oigin Installer"
   wine start 'C:\OriginThinSetup.exe'
   while kill -0 ${wineserver_pid} 2>/dev/null; do
       sleep 1
@@ -208,5 +208,5 @@ elif [[ $1 = "--uninstall" ]]; then
 elif [[ $1 = "--help" ]]; then
   help
 else
-  echo Type $0 --help for more information
+  echo Type "$0" --help for more information
 fi
