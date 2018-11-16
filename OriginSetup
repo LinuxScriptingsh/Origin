@@ -103,6 +103,7 @@ function buildwine() {
     sudo dpkg --add-architecture i386
     wget -nc --quiet https://dl.winehq.org/wine-builds/Release.key
     sudo apt-key add Release.key
+    rm -f Release.key
     if [[ $DEBVER = "9" ]]; then
       echo "deb https://dl.winehq.org/wine-builds/debian/ stretch main" | sudo tee /etc/apt/sources.list.d/wine.list
     elif [[ $DEBVER = "8" ]]; then
