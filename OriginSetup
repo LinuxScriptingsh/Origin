@@ -7,23 +7,15 @@
 . /etc/os-release
 OS=$ID
 pkgname=OriginSetup
-pkgver=4.0
+pkgver=Beta 4.5
 pkgdesc='Installs EA`s Origin on Arch Linux GNU/Linux'
 license='unknown'
 url="https://github.com/LinuxSquare/Origin"
 LOCATION=$HOME/SquareGames
 prefixname=EA32
-archdepends='lib32-libldap
-lib32-gnutls
-wget
-git
-cabextract'
-fedoradepends='openldap
-gnutls
-cabextract'
-susedepend='gnutls
-openldap2
-cabextract'
+archdepends='lib32-libldap lib32-gnutls wget git cabextract'
+fedoradepends='openldap gnutls cabextract'
+susedepend='gnutls openldap2 cabextract'
 
 WHITE='\033[0m'
 RED='\033[0;31m'
