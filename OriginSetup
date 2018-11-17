@@ -7,13 +7,13 @@
 . /etc/os-release
 OS=$ID
 pkgname=OriginSetup
-pkgver=Beta 4.5
+pkgver=Beta 4.6
 pkgdesc='Installs EA`s Origin on Arch Linux GNU/Linux'
 license='unknown'
 url="https://github.com/LinuxSquare/Origin"
 LOCATION=$HOME/SquareGames
 prefixname=EA32
-archdepends='lib32-libldap lib32-gnutls wget git cabextract'
+archdepends="lib32-libldap lib32-gnutls wget git cabextract"
 fedoradepends='openldap gnutls cabextract'
 susedepend='gnutls openldap2 cabextract'
 
@@ -63,7 +63,7 @@ function checkConnection() {
   orangeecho "Checking your internet-connection"
   wget --spider --quiet http://example.com
   if [[ $? != 0 ]]; then
-    REASON="No internet-connection"
+    REASON="Either no internet-connection or wget not installed"
     errorQuit "Uh oh, and error occured during installation, please fix the problem first, before you retry.
     \nErrorCode: $REASON"
   else
@@ -146,7 +146,7 @@ function buildwine() {
 }
 
 function preparePrefix() {
-  orangeecho "Cloning winetricks from githubusercontent"
+  greenecho "Cloning winetricks from githubusercontent"
   wget --quiet --no-check-certificate https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
   chmod +x winetricks
   mkdir -p ~/SquareGames
@@ -169,12 +169,12 @@ function preparePrefix() {
 function install() {
   export WINEPREFIX=~/SquareGames/EA32
   pushd "${WINEPREFIX}/drive_c"
-  orangeecho "Getting Origin installation-file"
+  greenecho "Getting Origin installation-file"
   wget --quiet https://origin-a.akamaihd.net/Origin-Client-Download/origin/live/OriginThinSetup.exe
   sleep 2
   wineserver -f &
   wineserver_pid=$!
-  orangeecho "Starting Oigin Installer"
+  greenecho "Starting Oigin Installer"
   sleep 3
   wine start 'C:\OriginThinSetup.exe'
   while kill -0 ${wineserver_pid} 2>/dev/null; do
