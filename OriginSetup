@@ -7,15 +7,16 @@
 . /etc/os-release
 OS=$ID
 pkgname=OriginSetup
-pkgver=Beta 4.6
+pkgver=Beta 4.7
 pkgdesc='Installs EA`s Origin on Arch Linux GNU/Linux'
 license='unknown'
 url="https://github.com/LinuxSquare/Origin"
 LOCATION=$HOME/SquareGames
 prefixname=EA32
 archdepends="lib32-libldap lib32-gnutls wget git cabextract"
-fedoradepends='openldap gnutls cabextract'
-susedepend='gnutls openldap2 cabextract'
+fedoradepends="openldap gnutls cabextract"
+susedepends="gnutls openldap2 cabextract"
+debdepends="libldap-2.4-2 gnutls-bin apt-transport-https cabextract"
 
 WHITE='\033[0m'
 RED='\033[0;31m'
@@ -80,11 +81,11 @@ function dependencies() {
   if [[ $OS = "arch" ]]; then
     sudo pacman -S ${archdepends} --quiet --noconfirm --noprogressbar
   elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
-    sudo apt-get -qq install libldap-2.4-2 gnutls-bin apt-transport-https cabextract -y
+    sudo apt-get -qq install ${debdepends} cabextract -y
   elif [[ $OS = "fedora" ]]; then
-    sudo dnf -q install openldap gnutls cabextract -y
+    sudo dnf -q install ${fedoradepends} -y
   elif [[ $OS = "opensuse-tumbleweed" || "opensuse-leap" ]]; then
-    sudo zypper -y in "$susedepend"
+    sudo zypper -y in ${susedepends}
   fi
 
 }
@@ -156,7 +157,6 @@ function preparePrefix() {
   read
   WINEPREFIX=~/SquareGames/EA32 wine
   export WINEPREFIX=~/SquareGames/EA32
-  rm -rf "${WINEPREFIX}"
   WINEARCH=win32 wineboot -u
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2010
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2013
