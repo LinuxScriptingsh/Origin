@@ -89,6 +89,10 @@ function dependencies() {
     sudo pacman -S "$archdepends" --quiet --noconfirm --noprogressbar
   elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
     sudo apt-get -qq install libldap-2.4-2 gnutls-bin apt-transport-https cabextract -y
+  elif [[ $OS = "fedora" ]]; then
+    sudo dnf -q install openldap gnutls cabextract -y
+  elif [[ $OS = "opensuse-tumbleweed" || "opensuse-leap" ]]; then
+    sudo zypper -y in "$susedepend"
   fi
 
 }
@@ -120,11 +124,11 @@ function buildwine() {
       \nAny kind of Ubuntu version
       \nLinux Mint 18.x and 19.0"
     fi
-    sudo apt-get -qq update && sudo apt-get -qq upgrade
-    sudo apt-get -qq install --install-recommends winehq-staging
+    sudo apt-get -qq update
+    sudo apt-get -qq upgrade -y
+    sudo apt-get -qq install --install-recommends winehq-staging -y
   elif [[ $OS = "fedora" ]]; then
     FEDORAVER=$VERSION_ID
-    sudo dnf -q install "$fedoradepends"
     if [[ $FEDORAVER = "29" ]]; then
       sudo dnf -q config-manager --add-repo https://download.opensuse.org/repositories/Emulators:/Wine:/Fedora/Fedora_29_standard/Emulators:Wine:Fedora.repo
     elif [[ $FEDORAVER = "28" ]]; then
@@ -132,14 +136,12 @@ function buildwine() {
     else
       errorQuit "Unsupported Fedora version. Please make sure you're using either version 28 or 29"
     fi
-    sudo dnf -q install winehq-staging
+    sudo dnf -q install winehq-staging -y
   elif [[ $OS = "opensuse-tumbleweed" ]]; then
-    sudo zypper in -y "$susedepend"
     sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Tumbleweed/Emulators:Wine.repo | echo 'a'
     sudo zypper in -y wine-staging
   elif [[ $OS = "opensuse-leap" ]]; then
     SUSEVER=$VERSION
-    sudo zypper -y in "$susedepend"
     if [[ $SUSEVER = "15.0" ]]; then
       sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Leap_15.0/Emulators:Wine.repo | echo 'a'
     elif [[ $SUSEVER = "42.3" ]]; then
