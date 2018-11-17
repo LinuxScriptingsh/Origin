@@ -86,7 +86,7 @@ function dependencies() {
   fi
   greenecho "Installing missing dependencies. This may take a while, depending on your internet-connection..."
   if [[ $OS = "arch" ]]; then
-    sudo pacman -S "$archdepends" --quiet --noconfirm --noprogressbar
+    sudo pacman -S ${archdepends} --quiet --noconfirm --noprogressbar
   elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
     sudo apt-get -qq install libldap-2.4-2 gnutls-bin apt-transport-https cabextract -y
   elif [[ $OS = "fedora" ]]; then
