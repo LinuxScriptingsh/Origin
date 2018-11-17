@@ -1,4 +1,5 @@
-# Origin on Arch, Debian, Ubuntu, Linux Mint, openSUSE and Fedora
+# Origin on Arch, Debian, Ubuntu, Linux Mint, openSUSE and Fedora 
+**[only the latest two versions e.g. Debian 9 & 8]**
 
 Download clone the repository using ``` git clone https://github.com/LinuxSquare/Origin.git ```
 
