@@ -55,7 +55,7 @@ function help() {
 
 function uninstall() {
   export WINEPREFIX=~/SquareGames/EA32
-  cd "${WINEPREFIX}/drive_c/Program Files/Origin"
+  pushd "${WINEPREFIX}/drive_c/Program Files/Origin"
   wineserver -f &
   wineserver_pid=$!
   orangeecho "Starting Origin Uninstaller"
@@ -63,7 +63,7 @@ function uninstall() {
   while kill -0 ${wineserver_pid} 2>/dev/null; do
       sleep 1
   done
-  cd
+  popd
   rm -rf ~/SquareGames/EA32/
 }
 
@@ -172,22 +172,20 @@ function preparePrefix() {
   rm -f winetricks
 }
 
-function installOrigin() {
+function install() {
   export WINEPREFIX=~/SquareGames/EA32
-  cd "${WINEPREFIX}/drive_c"
+  pushd "${WINEPREFIX}/drive_c"
   orangeecho "Getting Origin installation-file"
   wget --quiet https://origin-a.akamaihd.net/Origin-Client-Download/origin/legacy/OriginThinSetup.exe
-  sleep 2
   wineserver -f &
   wineserver_pid=$!
-  orangeecho "Starting Origin Installer"
-  sleep 3
+  orangeecho "Starting Oigin Installer"
   wine start 'C:\OriginThinSetup.exe'
   while kill -0 ${wineserver_pid} 2>/dev/null; do
       sleep 1
   done
   rm -f OriginThinSetup.exe
-  cd
+  popd
 }
 
 function update() {
@@ -201,7 +199,7 @@ if [[ $1 = "-i" || $1 = "--install" ]]; then
   dependencies
   buildwine
   preparePrefix
-  installOrigin
+  install
 elif [[ $1 = "-u" || $1 = "--update" ]]; then
   update
 elif [[ $1 = "--uninstall" ]]; then
