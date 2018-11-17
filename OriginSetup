@@ -177,9 +177,11 @@ function install() {
   pushd "${WINEPREFIX}/drive_c"
   orangeecho "Getting Origin installation-file"
   wget --quiet https://origin-a.akamaihd.net/Origin-Client-Download/origin/legacy/OriginThinSetup.exe
+  sleep 2
   wineserver -f &
   wineserver_pid=$!
   orangeecho "Starting Oigin Installer"
+  sleep 3
   wine start 'C:\OriginThinSetup.exe'
   while kill -0 ${wineserver_pid} 2>/dev/null; do
       sleep 1
