@@ -7,7 +7,7 @@
 . /etc/os-release
 OS=$ID
 pkgname=OriginSetup
-pkgver='Beta 4.7'
+pkgver='Beta 4.8'
 pkgdesc='Installs EA`s Origin on Arch Linux GNU/Linux'
 license='unknown'
 url="https://github.com/LinuxSquare/Origin"
@@ -85,7 +85,7 @@ function dependencies() {
   elif [[ $OS = "fedora" ]]; then
     sudo dnf -q install ${fedoradepends} -y
   elif [[ $OS = "opensuse-tumbleweed" || "opensuse-leap" ]]; then
-    sudo zypper -y in ${susedepends}
+    sudo zypper in --no-confirm ${susedepends}
   fi
 
 }
@@ -131,6 +131,7 @@ function buildwine() {
     fi
     sudo dnf -q install winehq-staging -y
   elif [[ $OS = "opensuse-tumbleweed" ]]; then
+    sudo zypper dup -y
     sudo zypper ar -f http://download.opensuse.org/repositories/Emulators:/Wine/openSUSE_Tumbleweed/Emulators:Wine.repo | echo 'a'
     sudo zypper in -y wine-staging
   elif [[ $OS = "opensuse-leap" ]]; then
