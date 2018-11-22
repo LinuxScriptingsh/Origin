@@ -8,7 +8,7 @@ Installation:
 
 Step 1: Fire up a terminal inside (or navigate to) the folder, where the script is located.
 
-Step 2: Install Origin by typing ``` ./origin.sh -i ``` inside the terminal.
+Step 2: Install Origin by typing ``` ./OriginSetup -i ``` inside the terminal.
 
 Step 3: In winecfg, set your Windowsversion to ```Windows 7```. Apply those changes and close the window.
 
