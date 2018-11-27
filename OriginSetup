@@ -1,15 +1,29 @@
 #!/bin/bash
 
-# Maintainer: LinuxSquare
+# OriginSetup; This script installs the Origin Software of the EA network on almost any Linux distribution using the WINE compatibilitylayer.
+# Copyright (C) 2018 LinuxSquare
 
-# Warning! this is not a PKGBUILD, this is just a script, which was inspired by a PKGBUILD of the Arch Linux Linux-Distribution!
-# This means, that you can't run this script by using "makepkg -si"
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version
+
+# This program is distributed in the hope it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTYBILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Generel Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program, If not, see <https://www.gnu.org/licenses/>.
+
+
+export WINEPREFIX=~/SquareGames/EA32
 . /etc/os-release
 OS=$ID
 pkgname=OriginSetup
-pkgver='Beta 4.8'
+pkgver='Beta 4.9'
 pkgdesc='Installs EA`s Origin on Arch Linux GNU/Linux'
-license='unknown'
+license='GPLv3'
 url="https://github.com/LinuxSquare/Origin"
 LOCATION=$HOME/SquareGames
 prefixname=EA32
@@ -41,13 +55,22 @@ function orangeecho() {
 }
 
 function help() {
+  echo -e "OriginSetup: $1: invalid option"
   echo -e "  -i, --install\t\t\t Installs the software"
   echo -e "  -u, --update\t\t\t Updates the software"
+  echo -e "  -v, --version\t\t\t Shows the current version and the license of the software."
   echo -e "      --uninstall\t\t\t Uninstalls the software"
 }
 
+function version() {
+    echo -e "    ${pkgname}, $pkgver
+    Copyright (C) 2018 LinuxSquare
+    License ${license}: GNU GPL version 3 or later <https://www.gnu.org/licenses/gpl.html>
+    This program comes with ABSOLUTELY NO WARRANTY.
+    This is free software, and you are welcome to redistribute it."
+}
+
 function uninstall() {
-  export WINEPREFIX=~/SquareGames/EA32
   pushd "${WINEPREFIX}/drive_c/Program Files/Origin"
   wineserver -f &
   wineserver_pid=$!
@@ -79,13 +102,13 @@ function dependencies() {
   fi
   greenecho "Installing missing dependencies. This may take a while, depending on your internet-connection..."
   if [[ $OS = "arch" ]]; then
-    sudo pacman -S ${archdepends} --quiet --noconfirm --noprogressbar
+    sudo pacman -S "${archdepends}" --quiet --noconfirm --noprogressbar
   elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
-    sudo apt-get -qq install ${debdepends} -y
+    sudo apt-get -qq install "${debdepends}" -y
   elif [[ $OS = "fedora" ]]; then
-    sudo dnf -q install ${fedoradepends} -y
-  elif [[ $OS = "opensuse-tumbleweed" || "opensuse-leap" ]]; then
-    sudo zypper in --no-confirm ${susedepends}
+    sudo dnf -q install "${fedoradepends}" -y
+  elif [[ $OS = "opensuse-tumbleweed" || $OS = "opensuse-leap" ]]; then
+    sudo zypper in --no-confirm "${susedepends}"
   fi
 
 }
@@ -115,7 +138,7 @@ function buildwine() {
       errorQuit "Unsupported distro version. This script currently supports only:
       \nDebian 9 and 8
       \nAny kind of Ubuntu version
-      \nLinux Mint 18.x and 19.0"
+      \nLinux Mi nt 18.x and 19.0"
     fi
     sudo apt-get -qq update
     sudo apt-get -qq upgrade -y
@@ -157,7 +180,6 @@ function preparePrefix() {
   \nPress [RETURN] when you've finished reading."
   read
   WINEPREFIX=~/SquareGames/EA32 wine
-  export WINEPREFIX=~/SquareGames/EA32
   WINEARCH=win32 wineboot -u
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2010
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2013
@@ -168,14 +190,13 @@ function preparePrefix() {
 }
 
 function install() {
-  export WINEPREFIX=~/SquareGames/EA32
   pushd "${WINEPREFIX}/drive_c"
   greenecho "Getting Origin installation-file"
   wget --quiet https://origin-a.akamaihd.net/Origin-Client-Download/origin/live/OriginThinSetup.exe
   sleep 2
   wineserver -f &
   wineserver_pid=$!
-  greenecho "Starting Oigin Installer"
+  greenecho "Starting Origin Installer"
   sleep 3
   wine start 'C:\OriginThinSetup.exe'
   while kill -0 ${wineserver_pid} 2>/dev/null; do
@@ -191,18 +212,28 @@ function update() {
   rm -f wine-origin-updater
 }
 
-if [[ $1 = "-i" || $1 = "--install" ]]; then
+
+case $1 in
+-i|--install)
   checkConnection
   dependencies
   buildwine
   preparePrefix
   install
-elif [[ $1 = "-u" || $1 = "--update" ]]; then
+  ;;
+-u|--update)
   update
-elif [[ $1 = "--uninstall" ]]; then
+  ;;
+--uninstall)
   uninstall
-elif [[ $1 = "--help" ]]; then
+  ;;
+-h|--help)
   help
-else
-  echo Type "$0" --help for more information
-fi
+  ;;
+-v|--version)
+  version
+  ;;
+*)
+  orangeecho "Type $0 --help for more information"
+  ;;
+esac
