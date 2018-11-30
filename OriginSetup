@@ -71,6 +71,7 @@ function version() {
 }
 
 function uninstall() {
+  export WINEPREFIX=~/SquareGames/EA32
   pushd "${WINEPREFIX}/drive_c/Program Files/Origin"
   wineserver -f &
   wineserver_pid=$!
