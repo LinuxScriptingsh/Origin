@@ -210,7 +210,7 @@ function install() {
 function update() {
   git clone https://github.com/DrDoctor13/wine-origin-updater.git && cd wine-origin-updater
   WINEPREFIX=~/SquareGames/EA32 ./updateorigin.sh && cd ..
-  rm -f wine-origin-updater
+  rm -rf wine-origin-updater
 }
 
 
