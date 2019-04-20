@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # OriginSetup; This script installs the Origin Software of the EA network on almost any Linux distribution using the WINE compatibilitylayer.
-# Copyright (C) 2018 LinuxSquare
+# Copyright (C) 2019 LinuxSquare
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,19 +18,20 @@
 
 
 export WINEPREFIX=~/SquareGames/EA32
+export WINEARCH=win64
 . /etc/os-release
 OS=$ID
 pkgname=OriginSetup
-pkgver='Beta 4.9'
-pkgdesc='Installs EA`s Origin on Arch Linux GNU/Linux'
+pkgver='Beta 4.13'
+pkgdesc='Installs EA`s Origin on GNU/Linux'
 license='GPLv3'
 url="https://github.com/LinuxSquare/Origin"
 LOCATION=$HOME/SquareGames
 prefixname=EA32
-archdepends="lib32-libldap lib32-gnutls wget git cabextract"
-fedoradepends="openldap gnutls cabextract"
-susedepends="gnutls openldap2 cabextract"
-debdepends="libldap-2.4-2 gnutls-bin apt-transport-https cabextract"
+archdepends="lib32-libldap lib32-gnutls lib32-vulkan-icd-loader wget git cabextract archlinux-keyring"
+fedoradepends="openldap gnutls vulkan-loader cabextract"
+susedepends="gnutls openldap2 vulkan-loader cabextract"
+debdepends="libldap-2.4-2 gnutls-bin apt-transport-https cabextract" #Vulkan ICD Loader missing
 
 WHITE='\033[0m'
 RED='\033[0;31m'
@@ -64,15 +65,14 @@ function help() {
 
 function version() {
     echo -e "    ${pkgname}, $pkgver
-    Copyright (C) 2018 LinuxSquare
+    Copyright (C) 2019 LinuxSquare
     License ${license}: GNU GPL version 3 or later <https://www.gnu.org/licenses/gpl.html>
     This program comes with ABSOLUTELY NO WARRANTY.
     This is free software, and you are welcome to redistribute it."
 }
 
 function uninstall() {
-  export WINEPREFIX=~/SquareGames/EA32
-  pushd "${WINEPREFIX}/drive_c/Program Files/Origin"
+  pushd "${WINEPREFIX}/drive_c/Program Files (x86)/Origin"
   wineserver -f &
   wineserver_pid=$!
   orangeecho "Starting Origin Uninstaller"
@@ -103,13 +103,25 @@ function dependencies() {
   fi
   greenecho "Installing missing dependencies. This may take a while, depending on your internet-connection..."
   if [[ $OS = "arch" ]]; then
-    sudo pacman -S "${archdepends}" --quiet --noconfirm --noprogressbar
+    for dependency in $archdepends
+    do
+      sudo pacman -S $dependency --quiet --noconfirm --noprogressbar
+    done
   elif [[ $OS = "debian" || $OS = "ubuntu" || $OS = "linuxmint" ]]; then
-    sudo apt-get -qq install "${debdepends}" -y
+  for dependency in $debdepends
+  do
+    sudo apt-get -qq install $dependency -y
+  done
   elif [[ $OS = "fedora" ]]; then
-    sudo dnf -q install "${fedoradepends}" -y
+  for dependency in $fedoradepends
+  do
+    sudo dnf -q install $dependency -y
+  done
   elif [[ $OS = "opensuse-tumbleweed" || $OS = "opensuse-leap" ]]; then
-    sudo zypper in --no-confirm "${susedepends}"
+  for dependency in $susedepends
+  do
+    sudo zypper in --no-confirm $dependency
+  done
   fi
 
 }
@@ -139,7 +151,7 @@ function buildwine() {
       errorQuit "Unsupported distro version. This script currently supports only:
       \nDebian 9 and 8
       \nAny kind of Ubuntu version
-      \nLinux Mi nt 18.x and 19.0"
+      \nLinux Mint 18.x and 19.0"
     fi
     sudo apt-get -qq update
     sudo apt-get -qq upgrade -y
@@ -172,16 +184,34 @@ function buildwine() {
 }
 
 function preparePrefix() {
+  # VulkanSDK
+  greenecho "Cloning VulkanSDK from LunarG"
+  wget https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe?Human=true
+  mv vulkan-sdk.exe?Human=true vulkan-sdk.exe
+  mkdir -p ~/SquareGames
+  WINEPREFIX=~/SquareGames/EA32 wine vulkan-sdk.exe
+  WINEARCH=win64 wineboot -u
+  export WINEDEBUG=-all
+  pushd "${WINEPREFIX}"
+  mkdir -p 32
+  mkdir -p 64
+  cd 32
+  wget https://haagch.frickel.club/files/dxvk/latest/32/bin/d3d11.dll https://haagch.frickel.club/files/dxvk/latest/32/bin/dxgi.dll https://haagch.frickel.club/files/dxvk/latest/32/bin/setup_dxvk.sh
+  WINEPREFIX=~/SquareGames/EA32 bash setup_dxvk.sh install -y
+
+  cd ../64
+  wget https://haagch.frickel.club/files/dxvk/latest/64/bin/d3d11.dll https://haagch.frickel.club/files/dxvk/latest/64/bin/dxgi.dll https://haagch.frickel.club/files/dxvk/latest/64/bin/setup_dxvk.sh
+  WINEPREFIX=~/SquareGames/EA32 bash setup_dxvk.sh install -y
+  popd
+  rm -f vulkan-sdk.exe
+  # winetricks
   greenecho "Cloning winetricks from githubusercontent"
   wget --quiet --no-check-certificate https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks
   chmod +x winetricks
-  mkdir -p ~/SquareGames
   orangeecho "Downloading dlls to generate Wineprefix. Please select Windows 7 as your operating system inside winecfg.
   \nBe sure you have removed the ticks for sending data and crash reports to Microsoft, while installing the DLL files.
   \nPress [RETURN] when you've finished reading."
   read
-  WINEPREFIX=~/SquareGames/EA32 wine
-  WINEARCH=win32 wineboot -u
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2010
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2013
   WINEPREFIX=~/SquareGames/EA32 ./winetricks vcrun2017
@@ -199,8 +229,8 @@ function install() {
   wineserver_pid=$!
   greenecho "Starting Origin Installer"
   sleep 3
-  wine start 'C:\OriginThinSetup.exe'
-  while kill -0 ${wineserver_pid} 2>/dev/null; do
+  WINEPREFIX=~/SquareGames/EA32 wine OriginThinSetup.exe
+  while kill -0 ${wineserver_pid} 2> /dev/null; do
       sleep 1
   done
   rm -f OriginThinSetup.exe
@@ -208,9 +238,10 @@ function install() {
 }
 
 function update() {
-  git clone https://github.com/DrDoctor13/wine-origin-updater.git && cd wine-origin-updater
-  WINEPREFIX=~/SquareGames/EA32 ./updateorigin.sh && cd ..
-  rm -rf wine-origin-updater
+  pushd "${WINEPREFIX}/drive_c/Program Files/Origin"
+  wget --quiet https://download.dm.origin.com/origin/live/OriginSetup.exe
+  unzip OriginSetup.exe | echo 'A'
+  popd
 }
 
 
